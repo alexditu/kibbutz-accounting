@@ -7,7 +7,7 @@ from collections import namedtuple
 from subprocess import Popen, PIPE
 from struct import pack, unpack
 
-UDP_IP = "127.0.0.1"
+UDP_IP = "10.0.3.1"
 UDP_PORT = 5005
 SERVER_ADDR = (UDP_IP, UDP_PORT)
 
@@ -23,6 +23,18 @@ total_recv = 0
 total_accounted = 0
 seq = -1
 iou_history = []
+
+
+# TODO: method not tested!!
+def apply_iptables_rules(server_ip):
+    INBOUND_RULE_TEMPLATE = '-t filter -A INPUT -j NFLOG --nflog-prefix  "INBOUND "'
+    OUTBOUND_RULE_TEMPLATE = '-t filter -A OUTPUT -j NFLOG --nflog-prefix  "OUTBOUND " ! -d {}/32'
+
+    inbound_rule = INBOUND_RULE_TEMPLATE
+    outbound_rule = OUTBOUND_RULE_TEMPLATE.format(server_ip)
+
+    Popen("iptables " + inbound_rule, shell=True)
+    Popen("iptables " + outbound_rule, shell=True)
 
 
 def parse_iptables_input(line):
@@ -41,17 +53,19 @@ def send_iou(iou):
         print "Message sent failed for iou: {}".format(iou)
 
 
+def zero_iptables_buffers():
+    Popen("iptables -t filter -Z INPUT", shell=True)
+    Popen("iptables -t filter -Z OUTPUT", shell=True)
+
+
 def read_iptables_data(ip = "0.0.0.0"):
     cmd = "iptables -t filter -L INPUT --line-numbers -nvx | grep {}"
-    cmd = cmd.format('"udp dpt:53"')
+    cmd = cmd.format(ip)
 
     line = Popen(cmd, shell=True, stdout=PIPE).stdout.readline()
     print "line: {}".format(line)
 
     data = parse_iptables_input(line)
-
-
-
     return data
 
 
@@ -92,7 +106,7 @@ def main():
         iou = generate_iou()
         packed_iou = pack(IOU_FORMAT, *iou)
         send_iou(packed_iou)
-        time.sleep(2)
+        time.sleep(4)
 
 if __name__ == "__main__":
     main()
