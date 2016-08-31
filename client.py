@@ -82,7 +82,7 @@ def generate_iou():
     seq += 1
 
     # k_pub, amount, h, seq
-    iou = [256, crt_accounting, crt_bytes, seq]
+    iou = [256, crt_bytes, crt_accounting, seq]
     print "IOU: {}".format(iou)
 
     packed_iou = pack(IOU_FORMAT, *iou)
