@@ -1,0 +1,10 @@
+mysql python connector install:		pip install mysql-connector
+create table users (id INT unsigned NOT NULL AUTO_INCREMENT, name VARCHAR(150) NOT NULL, private_key VARCHAR(2000), public_key VARCHAR(2000), PRIMARY KEY (id));
+insert into users (name, private_key, public_key) values ('alex', '123', '456');
+
+mysql -u root -p
+
+show databases
+use <database_name>
+
+show tables
